@@ -2,7 +2,45 @@
 
 ## Project info
 
-**URL**: 
+**URL**: https://worksync-main.vercel.app
+
+# 🚀 WorkSync
+
+WorkSync is a modern web application designed to streamline workflow management, collaboration, and productivity. It helps teams manage tasks, track progress, and improve coordination through a clean and intuitive interface.
+
+---
+
+## 📌 Features
+
+- 🔐 Authentication & Authorization (Role-based access)
+- 📊 Dashboard with real-time insights
+- ✅ Task Management (Create, assign, update tasks)
+- 👥 User Roles (Admin / Employee / Team Members)
+- 📅 Activity Tracking & History
+- 🔔 Notifications & Alerts
+- 📱 Responsive UI for all devices
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend:
+- React.js
+- Tailwind CSS
+- Framer Motion (for animations)
+
+### Backend:
+- Node.js / Express.js *(or Supabase if used)*
+
+### Database:
+- MongoDB / Supabase / PostgreSQL
+
+### Other Tools:
+- Git & GitHub
+- REST APIs
+- JWT Authentication
+
+-
 
 ## How can I edit this code?
 
@@ -44,13 +82,4 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-"# Workflow" 
+## Wh
