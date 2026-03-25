@@ -425,7 +425,7 @@ export default function Index() {
                 <motion.div
                   key={feature.title} custom={i} variants={scaleIn} initial="hidden" whileInView="visible" viewport={{ once: true }} whileHover={{ y: -8 }}
                   className="group relative rounded-3xl border border-foreground/10 p-8 cursor-default transition-all duration-300"
-                  style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(20px)" }}
+                  style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(24px)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1)" }}
                 >
                   <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                     style={{ background: `radial-gradient(circle at 50% 0%, ${feature.accent}20 0%, transparent 60%)` }}
@@ -436,7 +436,7 @@ export default function Index() {
                     <feature.icon className="h-7 w-7" style={{ color: feature.accent, filter: `drop-shadow(0 0 10px ${feature.accent})` }} />
                   </div>
                   <h3 className="text-xl font-bold mb-3 text-white">{feature.title}</h3>
-                  <p className="text-sm font-medium text-foreground/50 leading-relaxed">{feature.desc}</p>
+                  <p className="text-sm font-medium text-white/70 leading-relaxed">{feature.desc}</p>
                 </motion.div>
               ))}
             </div>
