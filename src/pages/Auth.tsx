@@ -218,7 +218,7 @@ export default function Auth() {
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="gazlwahab58@gmail.com"
+                        placeholder="Enter your email"
                         required
                         className="h-11 bg-transparent border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30"
                       />
