@@ -41,18 +41,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (session?.user) {
           // Fetch role and profile using setTimeout to avoid deadlock
           setTimeout(async () => {
-            const { data: roleData } = await supabase.rpc("get_user_role", {
-              _user_id: session.user.id,
-            });
-            setRole(roleData as AppRole);
+            try {
+              const { data: roleData, error: roleError } = await supabase.rpc("get_user_role", {
+                _user_id: session.user.id,
+              });
+              
+              if (roleError) console.error("Error fetching role:", roleError);
+              setRole(roleData as AppRole);
 
-            const { data: profileData } = await supabase
-              .from("profiles")
-              .select("full_name, email")
-              .eq("id", session.user.id)
-              .single();
-            setProfile(profileData);
-            setLoading(false);
+              const { data: profileData, error: profileError } = await supabase
+                .from("profiles")
+                .select("full_name, email")
+                .eq("id", session.user.id)
+                .single();
+              
+              if (profileError) console.error("Error fetching profile:", profileError);
+              setProfile(profileData);
+            } catch (err) {
+              console.error("Auth initialization error:", err);
+            } finally {
+              setLoading(false);
+            }
           }, 0);
         } else {
           setRole(null);

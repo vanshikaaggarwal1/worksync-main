@@ -64,68 +64,73 @@ export default function NotificationsPage() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 animate-fade-in">
-        <div className="flex items-center justify-between">
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-            <h1 className="text-3xl font-bold tracking-tight">Notifications</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? "s" : ""}` : "All caught up!"}
+      <div className="space-y-8 animate-fade-in relative z-10 p-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 sm:gap-4 bg-glass p-6 sm:p-8 rounded-3xl border border-foreground/5 backdrop-blur-3xl shadow-2xl relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+            <h1 className="text-4xl font-black tracking-tight text-foreground drop-shadow-md">Intelligence</h1>
+            <p className="text-sm font-bold text-foreground/40 mt-1 uppercase tracking-[0.2em]">
+              {unreadCount > 0 ? `${unreadCount} unread transmissions` : "System clear"}
             </p>
           </motion.div>
           {unreadCount > 0 && (
-            <Button variant="outline" size="sm" onClick={() => markAllReadMutation.mutate()} className="gap-1.5">
-              <CheckCheck className="h-4 w-4" /> Mark All Read
-            </Button>
+            <button 
+              onClick={() => markAllReadMutation.mutate()} 
+              className="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-red-500/20 transition-all flex items-center gap-2 active:scale-95 shadow-lg"
+            >
+              <CheckCheck className="h-4 w-4" /> Acknowledge All
+            </button>
           )}
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           <AnimatePresence>
             {notifications?.map((n, i) => {
               const IconComponent = typeIcons[n.type] || Bell;
-              const colorClass = typeColors[n.type] || "text-muted-foreground bg-muted";
               return (
                 <motion.div
                   key={n.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.03 }}
                 >
-                  <Card
-                    className={`card-shadow cursor-pointer transition-all duration-200 hover:shadow-md ${
-                      !n.is_read ? "border-primary/20 bg-primary/[0.03]" : ""
+                  <div
+                    className={`glass-card p-5 rounded-3xl flex items-start gap-5 cursor-pointer transition-all border group ${
+                      !n.is_read ? "border-red-500/30 bg-red-500/[0.03]" : "border-foreground/5 hover:border-foreground/20"
                     }`}
                     onClick={() => !n.is_read && markReadMutation.mutate(n.id)}
                   >
-                    <CardContent className="p-4 flex items-start gap-3">
-                      <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${colorClass}`}>
-                        <IconComponent className="h-4 w-4" />
+                    <div className={`h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 shadow-lg border transition-all ${
+                      !n.is_read 
+                        ? "bg-red-500 text-white border-red-400/50 shadow-[0_0_15px_rgba(239,68,68,0.4)]" 
+                        : "bg-foreground/5 text-foreground/40 border-foreground/5 group-hover:bg-foreground/10 group-hover:text-foreground"
+                    }`}>
+                      <IconComponent className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-4">
+                        <p className={`text-base tracking-tight uppercase ${!n.is_read ? "font-black text-foreground" : "font-bold text-foreground/60"}`}>{n.title}</p>
+                        {!n.is_read && (
+                          <span className="px-2 py-0.5 rounded bg-red-500 text-[8px] font-black text-white uppercase tracking-tighter shadow-[0_0_10px_rgba(239,68,68,0.5)]">New</span>
+                        )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className={`text-sm ${!n.is_read ? "font-semibold" : "font-medium"}`}>{n.title}</p>
-                          {!n.is_read && (
-                            <span className="h-2 w-2 rounded-full bg-primary mt-1.5 shrink-0" />
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">{n.message}</p>
-                        <p className="text-[10px] text-muted-foreground font-mono tabular-nums mt-1.5">
-                          {new Date(n.created_at).toLocaleString()}
-                        </p>
+                      <p className="text-sm font-medium text-foreground/40 mt-1 leading-relaxed uppercase tracking-wide">{n.message}</p>
+                      <div className="flex items-center gap-2 mt-4 text-[9px] font-black text-foreground/20 uppercase tracking-[0.2em] font-mono">
+                        <span className="h-1 w-1 rounded-full bg-foreground/20" />
+                        {new Date(n.created_at).toLocaleString()}
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 </motion.div>
               );
             })}
           </AnimatePresence>
           {(!notifications || notifications.length === 0) && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
-              <div className="h-16 w-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-4">
-                <Bell className="h-8 w-8 text-muted-foreground/30" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-32 bg-foreground/[0.02] rounded-3xl border border-dashed border-foreground/10">
+              <div className="h-20 w-20 rounded-full bg-foreground/5 flex items-center justify-center mx-auto mb-6">
+                <Bell className="h-10 w-10 text-foreground/10" />
               </div>
-              <p className="text-sm text-muted-foreground font-medium">No notifications yet</p>
-              <p className="text-xs text-muted-foreground mt-1">You'll see updates when tasks change</p>
+              <p className="text-sm font-black text-white/20 uppercase tracking-[0.4em]">Intelligence data empty</p>
             </motion.div>
           )}
         </div>

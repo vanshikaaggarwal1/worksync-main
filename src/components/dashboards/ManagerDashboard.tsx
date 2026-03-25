@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckSquare, Clock, Send, ThumbsUp, ArrowRight } from "lucide-react";
+import { CheckSquare, Clock, Send, ThumbsUp, ArrowRight, Users, Calendar, AlertTriangle, Activity } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +12,21 @@ const cardVariant = {
     opacity: 1, y: 0,
     transition: { delay: i * 0.08, duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
   }),
+};
+
+function getDaysLeft(deadline: string | null): { text: string; color: string; urgent: boolean } {
+  if (!deadline) return { text: "No deadline", color: "text-foreground/40", urgent: false };
+  const diff = Math.ceil((new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  if (diff < 0) return { text: `${Math.abs(diff)}d overdue`, color: "text-red-500", urgent: true };
+  if (diff === 0) return { text: "Due today", color: "text-red-500", urgent: true };
+  if (diff <= 3) return { text: `${diff}d left`, color: "text-orange-500", urgent: true };
+  if (diff <= 7) return { text: `${diff}d left`, color: "text-yellow-500", urgent: false };
+  return { text: `${diff}d left`, color: "text-green-500", urgent: false };
+}
+
+const statusColors: Record<string, string> = {
+  pending: "#94a3b8", in_progress: "#3b82f6", submitted: "#f97316",
+  approved: "#22c55e", completed: "#22c55e", rejected: "#ef4444",
 };
 
 export function ManagerDashboard() {
@@ -27,6 +41,7 @@ export function ManagerDashboard() {
       return {
         total: tasks.length,
         pending: tasks.filter((t) => t.status === "pending").length,
+        inProgress: tasks.filter((t) => t.status === "in_progress").length,
         submitted: tasks.filter((t) => t.status === "submitted").length,
         completed: tasks.filter((t) => t.status === "completed").length,
       };
@@ -39,7 +54,7 @@ export function ManagerDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("tasks")
-        .select("id, title, status, deadline, created_at")
+        .select("id, title, status, deadline, created_at, assigned_to")
         .eq("status", "submitted")
         .order("created_at", { ascending: false })
         .limit(6);
@@ -48,77 +63,285 @@ export function ManagerDashboard() {
     enabled: !!user,
   });
 
+  const { data: activeTasks } = useQuery({
+    queryKey: ["manager-active-tasks"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("tasks")
+        .select("id, title, status, deadline, assigned_to, created_at")
+        .in("status", ["pending", "in_progress", "submitted"])
+        .order("deadline", { ascending: true, nullsFirst: false })
+        .limit(3);
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  const { data: upcomingDeadlines } = useQuery({
+    queryKey: ["manager-deadlines"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("tasks")
+        .select("id, title, status, deadline, assigned_to")
+        .not("deadline", "is", null)
+        .in("status", ["pending", "in_progress", "submitted"])
+        .order("deadline", { ascending: true })
+        .limit(5);
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  const { data: teamMembers } = useQuery({
+    queryKey: ["manager-team"],
+    queryFn: async () => {
+      const { data: profiles } = await supabase.from("profiles").select("id, full_name, email");
+      const { data: roles } = await supabase.from("user_roles").select("user_id, role");
+      const roleMap: Record<string, string> = {};
+      (roles || []).forEach((r) => { roleMap[r.user_id] = r.role; });
+      return (profiles || []).map((p) => ({ ...p, role: roleMap[p.id] || "employee" }));
+    },
+    enabled: !!user,
+  });
+
+  const { data: profileMap } = useQuery({
+    queryKey: ["profile-map"],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("id, full_name, email");
+      const map: Record<string, { full_name: string; email: string }> = {};
+      (data || []).forEach((p) => { map[p.id] = { full_name: p.full_name, email: p.email }; });
+      return map;
+    },
+  });
+
   const statCards = [
-    { label: "Total Tasks", value: stats?.total || 0, icon: CheckSquare, accent: "text-primary", bg: "bg-primary/10" },
-    { label: "Pending", value: stats?.pending || 0, icon: Clock, accent: "text-warning", bg: "bg-warning/10" },
-    { label: "Awaiting Review", value: stats?.submitted || 0, icon: Send, accent: "text-info", bg: "bg-info/10" },
-    { label: "Completed", value: stats?.completed || 0, icon: ThumbsUp, accent: "text-success", bg: "bg-success/10" },
+    { label: "Total Tasks", value: stats?.total || 0, icon: CheckSquare, accent: "#ef4444", bg: "rgba(239,68,68,0.15)" },
+    { label: "Pending", value: stats?.pending || 0, icon: Clock, accent: "#f97316", bg: "rgba(249,115,22,0.15)" },
+    { label: "Awaiting Review", value: stats?.submitted || 0, icon: Send, accent: "#3b82f6", bg: "rgba(59,130,246,0.15)" },
+    { label: "Completed", value: stats?.completed || 0, icon: ThumbsUp, accent: "#22c55e", bg: "rgba(34,197,94,0.15)" },
   ];
 
-  return (
-    <div className="space-y-8 animate-fade-in">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl font-bold tracking-tight">Team Overview</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {stats?.submitted || 0} tasks awaiting your review
-        </p>
-      </motion.div>
+  const totalTasks = stats?.total || 0;
+  const statusSegments = totalTasks > 0 ? [
+    { label: "Pending", count: stats?.pending || 0, color: "#94a3b8" },
+    { label: "In Progress", count: stats?.inProgress || 0, color: "#3b82f6" },
+    { label: "Submitted", count: stats?.submitted || 0, color: "#f97316" },
+    { label: "Completed", count: stats?.completed || 0, color: "#22c55e" },
+  ] : [];
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  const getProgressPercent = (status: string) => {
+    const map: Record<string, number> = { pending: 10, in_progress: 45, submitted: 75, approved: 90, completed: 100, rejected: 50 };
+    return map[status] || 0;
+  };
+
+  return (
+    <div className="space-y-8 animate-fade-in relative z-10">
+      {/* Hero Banner */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 sm:gap-4 bg-glass p-6 sm:p-8 rounded-3xl border border-foreground/5 backdrop-blur-3xl shadow-2xl relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground drop-shadow-md">Team Overview</h1>
+          <p className="text-sm font-bold text-foreground/50 mt-1 uppercase tracking-widest relative z-10">
+            {stats?.submitted || 0} tasks awaiting your review
+          </p>
+        </motion.div>
+      </div>
+
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {statCards.map((stat, i) => (
           <motion.div key={stat.label} variants={cardVariant} initial="hidden" animate="visible" custom={i}>
-            <Card className="card-shadow card-3d">
-              <CardContent className="p-5">
-                <div className={`h-10 w-10 rounded-xl ${stat.bg} flex items-center justify-center mb-3`}>
-                  <stat.icon className={`h-5 w-5 ${stat.accent}`} />
-                </div>
-                <p className="text-2xl font-bold tabular-nums">{stat.value}</p>
-                <p className="text-[11px] font-medium text-muted-foreground mt-0.5">{stat.label}</p>
-              </CardContent>
-            </Card>
+            <div className="glass-card card-3d h-full p-4 sm:p-6 rounded-3xl flex flex-col items-center text-center">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl flex items-center justify-center mb-3 sm:mb-4 shadow-lg border border-foreground/5" style={{ background: stat.bg }}>
+                <stat.icon className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: stat.accent }} />
+              </div>
+              <p className="text-2xl sm:text-3xl font-black text-foreground tracking-tight tabular-nums">{stat.value}</p>
+              <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-foreground/40 mt-1.5">{stat.label}</p>
+            </div>
           </motion.div>
         ))}
       </div>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-        <Card className="card-shadow">
-          <CardHeader className="pb-3 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm font-semibold">Pending Approvals</CardTitle>
-            <button onClick={() => navigate("/tasks")} className="text-xs text-primary hover:underline font-medium flex items-center gap-1">
-              View all <ArrowRight className="h-3 w-3" />
-            </button>
-          </CardHeader>
-          <CardContent>
-            {pendingApprovals && pendingApprovals.length > 0 ? (
-              <div className="space-y-1">
-                {pendingApprovals.map((task, i) => (
-                  <motion.div
-                    key={task.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 + i * 0.05 }}
-                    className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
-                    onClick={() => navigate("/tasks")}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{task.title}</p>
-                      <p className="text-[11px] text-muted-foreground font-mono tabular-nums">
-                        Due: {task.deadline ? new Date(task.deadline).toLocaleDateString() : "No deadline"}
-                      </p>
-                    </div>
-                    <StatusBadge status={task.status} />
-                  </motion.div>
+      {/* Status Distribution */}
+      {totalTasks > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <div className="glass-card-dark rounded-3xl border border-foreground/10 overflow-hidden shadow-2xl">
+            <div className="px-6 py-5 border-b border-foreground/5 bg-glass">
+              <h2 className="text-sm font-black uppercase tracking-[0.2em] text-foreground/80">Task Distribution</h2>
+            </div>
+            <div className="p-6">
+              <div className="h-4 rounded-full overflow-hidden flex bg-foreground/5">
+                {statusSegments.map((seg) => (
+                  <div key={seg.label} className="h-full transition-all duration-700 first:rounded-l-full last:rounded-r-full" style={{ width: `${(seg.count / totalTasks) * 100}%`, background: seg.color }} title={`${seg.label}: ${seg.count}`} />
                 ))}
               </div>
-            ) : (
-              <div className="py-8 text-center">
-                <ThumbsUp className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">All caught up — no pending approvals</p>
+              <div className="flex flex-wrap gap-4 sm:gap-6 mt-4">
+                {statusSegments.map((seg) => (
+                  <div key={seg.label} className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full" style={{ background: seg.color }} />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-foreground/50">
+                      {seg.label} <span className="text-foreground/80">{seg.count}</span> <span className="text-foreground/30">({Math.round((seg.count / totalTasks) * 100)}%)</span>
+                    </span>
+                  </div>
+                ))}
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Task Progress Cards */}
+      {activeTasks && activeTasks.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+          <div className="glass-card-dark rounded-3xl border border-foreground/10 overflow-hidden shadow-2xl">
+            <div className="px-6 py-5 border-b border-foreground/5 bg-glass flex items-center justify-between">
+              <h2 className="text-sm font-black uppercase tracking-[0.2em] text-foreground/80">Active Tasks Progress</h2>
+              <button onClick={() => navigate("/tasks")} className="text-xs text-red-500 hover:text-red-400 font-bold uppercase tracking-wider transition-colors">View all →</button>
+            </div>
+            <div className="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {activeTasks.map((task, i) => {
+                const progress = getProgressPercent(task.status);
+                const dl = getDaysLeft(task.deadline);
+                const assignee = profileMap?.[task.assigned_to || ""];
+                return (
+                  <motion.div key={task.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 + i * 0.08 }}
+                    className="glass-card rounded-2xl p-5 border border-foreground/5 hover:border-foreground/10 transition-all cursor-pointer group" onClick={() => navigate("/tasks")}>
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-black text-foreground group-hover:text-red-500 transition-colors truncate">{task.title}</p>
+                        <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-wider mt-0.5">{assignee ? assignee.full_name : "Unassigned"}</p>
+                      </div>
+                      <StatusBadge status={task.status} />
+                    </div>
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">Progress</span>
+                        <span className="text-xs font-black text-foreground/60 tabular-nums">{progress}%</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-foreground/5 overflow-hidden">
+                        <motion.div className="h-full rounded-full" style={{ background: statusColors[task.status] || "#3b82f6" }}
+                          initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 1, delay: 0.5 + i * 0.1, ease: "easeOut" }} />
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="h-3 w-3 text-foreground/30" />
+                        <span className="text-[10px] font-bold text-foreground/40">{task.deadline ? new Date(task.deadline).toLocaleDateString() : "No deadline"}</span>
+                      </div>
+                      <span className={`text-[10px] font-black uppercase tracking-wider ${dl.color}`}>{dl.urgent && <AlertTriangle className="h-3 w-3 inline mr-1" />}{dl.text}</span>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* 3-Column Grid: Pending Approvals + Deadlines + Team */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Pending Approvals */}
+        <motion.div className="lg:col-span-1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+          <div className="glass-card-dark rounded-3xl border border-foreground/10 overflow-hidden shadow-2xl h-full">
+            <div className="px-6 py-5 border-b border-foreground/5 bg-glass flex items-center justify-between">
+              <h2 className="text-sm font-black uppercase tracking-[0.2em] text-foreground/80">Pending Approvals</h2>
+              <button onClick={() => navigate("/tasks")} className="text-xs text-red-500 hover:text-red-400 font-bold uppercase tracking-wider flex items-center gap-2 transition-colors">
+                View all <ArrowRight className="h-3 w-3" />
+              </button>
+            </div>
+            <div className="p-4">
+              {pendingApprovals && pendingApprovals.length > 0 ? (
+                <div className="space-y-1">
+                  {pendingApprovals.map((task, i) => (
+                    <motion.div key={task.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + i * 0.05 }}
+                      className="flex items-center justify-between py-3 px-4 rounded-2xl hover:bg-foreground/5 transition-all cursor-pointer border border-transparent hover:border-foreground/5 group" onClick={() => navigate("/tasks")}>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-foreground group-hover:text-red-500 transition-colors truncate">{task.title}</p>
+                        <p className="text-[10px] text-foreground/40 font-black uppercase tracking-widest mt-0.5">Due: {task.deadline ? new Date(task.deadline).toLocaleDateString() : "No deadline"}</p>
+                      </div>
+                      <StatusBadge status={task.status} />
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-12 text-center">
+                  <div className="h-16 w-16 rounded-full bg-foreground/5 flex items-center justify-center mx-auto mb-4 border border-foreground/5"><ThumbsUp className="h-8 w-8 text-foreground/10" /></div>
+                  <p className="text-sm font-bold text-foreground/30 uppercase tracking-widest">All caught up</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Upcoming Deadlines */}
+        <motion.div className="lg:col-span-1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
+          <div className="glass-card-dark rounded-3xl border border-foreground/10 overflow-hidden shadow-2xl h-full">
+            <div className="px-6 py-5 border-b border-foreground/5 bg-glass flex items-center justify-between">
+              <h2 className="text-sm font-black uppercase tracking-[0.2em] text-foreground/80">Upcoming Deadlines</h2>
+              <Calendar className="h-4 w-4 text-foreground/30" />
+            </div>
+            <div className="p-4">
+              {upcomingDeadlines && upcomingDeadlines.length > 0 ? (
+                <div className="space-y-1">
+                  {upcomingDeadlines.map((task, i) => {
+                    const dl = getDaysLeft(task.deadline);
+                    const assignee = profileMap?.[task.assigned_to || ""];
+                    return (
+                      <motion.div key={task.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + i * 0.05 }}
+                        className="flex items-center justify-between py-3 px-4 rounded-2xl hover:bg-foreground/5 transition-all cursor-pointer border border-transparent hover:border-foreground/5 group" onClick={() => navigate("/tasks")}>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-bold text-foreground group-hover:text-red-500 transition-colors truncate">{task.title}</p>
+                          <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-wider mt-0.5">{assignee ? assignee.full_name : "Unassigned"}</p>
+                        </div>
+                        <span className={`text-[10px] font-black uppercase tracking-wider whitespace-nowrap ${dl.color}`}>{dl.urgent && "⚠ "}{dl.text}</span>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="py-12 text-center">
+                  <div className="h-16 w-16 rounded-full bg-foreground/5 flex items-center justify-center mx-auto mb-4 border border-foreground/5"><Calendar className="h-8 w-8 text-foreground/10" /></div>
+                  <p className="text-sm font-bold text-foreground/30 uppercase tracking-widest">No upcoming deadlines</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Team Members */}
+        <motion.div className="lg:col-span-1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+          <div className="glass-card-dark rounded-3xl border border-foreground/10 overflow-hidden shadow-2xl h-full">
+            <div className="px-6 py-5 border-b border-foreground/5 bg-glass flex items-center justify-between">
+              <h2 className="text-sm font-black uppercase tracking-[0.2em] text-foreground/80">Team Members</h2>
+              <Users className="h-4 w-4 text-foreground/30" />
+            </div>
+            <div className="p-4">
+              {teamMembers && teamMembers.length > 0 ? (
+                <div className="space-y-1">
+                  {teamMembers.slice(0, 5).map((member, i) => (
+                    <motion.div key={member.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6 + i * 0.05 }}
+                      className="flex items-center gap-4 py-3 px-4 rounded-2xl hover:bg-foreground/5 transition-all border border-transparent hover:border-foreground/5">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-xs font-black shrink-0 shadow-lg">
+                        {member.full_name?.[0]?.toUpperCase() || "U"}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-foreground truncate">{member.full_name || "Unnamed"}</p>
+                        <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-wider truncate">{member.email}</p>
+                      </div>
+                      <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full bg-foreground/5 text-foreground/50 border border-foreground/5 shrink-0">{member.role}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-12 text-center">
+                  <div className="h-16 w-16 rounded-full bg-foreground/5 flex items-center justify-center mx-auto mb-4 border border-foreground/5"><Users className="h-8 w-8 text-foreground/10" /></div>
+                  <p className="text-sm font-bold text-foreground/30 uppercase tracking-widest">No team members</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }

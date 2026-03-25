@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { StatusBadge } from "@/components/StatusBadge";
 import { toast } from "sonner";
-import { Plus, MessageSquare, Upload, FileText, Download } from "lucide-react";
+import { Plus, MessageSquare, Upload, FileText, Download, Send, CheckSquare } from "lucide-react";
 
 export default function TasksPage() {
   const { user, role } = useAuth();
@@ -319,35 +319,38 @@ export default function TasksPage() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 animate-fade-in">
-        <div className="flex items-center justify-between">
+      <div className="space-y-8 animate-fade-in relative z-10 p-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 sm:gap-4 bg-glass p-6 sm:p-8 rounded-3xl border border-foreground/5 backdrop-blur-3xl shadow-2xl relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight">Tasks</h1>
-            <p className="text-sm text-muted-foreground mt-1">{tasks?.length || 0} tasks total</p>
+            <h1 className="text-4xl font-black tracking-tight text-foreground drop-shadow-md">Tasks</h1>
+            <p className="text-sm font-bold text-foreground/40 mt-1 uppercase tracking-[0.2em]">{tasks?.length || 0} active records</p>
           </div>
           {canCreate && (
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
-                <Button size="sm"><Plus className="h-4 w-4 mr-1" /> Assign Task</Button>
+                <button className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-2xl text-sm font-black uppercase tracking-widest shadow-[0_0_20px_rgba(239,68,68,0.3)] transition-all flex items-center gap-2 active:scale-95">
+                  <Plus className="h-5 w-5" /> Assign Task
+                </button>
               </SheetTrigger>
-              <SheetContent className="overflow-y-auto">
+              <SheetContent className="overflow-y-auto bg-background/90 backdrop-blur-2xl border-l border-foreground/10 text-foreground">
                 <SheetHeader>
-                  <SheetTitle>Create Task</SheetTitle>
+                  <SheetTitle className="text-2xl font-black text-foreground uppercase tracking-tight">Create Task</SheetTitle>
                 </SheetHeader>
-                <div className="space-y-4 mt-6">
+                <div className="space-y-6 mt-10">
                   <div className="space-y-2">
-                    <Label>Title</Label>
-                    <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Task title" />
+                    <Label className="text-xs font-black uppercase tracking-widest text-foreground/40">Title</Label>
+                    <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Task title" className="bg-foreground/5 border-foreground/10 text-foreground placeholder:text-foreground/20 h-12 rounded-xl focus:ring-red-500" />
                   </div>
                   <div className="space-y-2">
-                    <Label>Description</Label>
-                    <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the task..." />
+                    <Label className="text-xs font-black uppercase tracking-widest text-foreground/40">Description</Label>
+                    <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the task..." className="bg-foreground/5 border-foreground/10 text-foreground placeholder:text-foreground/20 min-h-[120px] rounded-xl focus:ring-red-500" />
                   </div>
                   <div className="space-y-2">
-                    <Label>Assign To</Label>
+                    <Label className="text-xs font-black uppercase tracking-widest text-foreground/40">Assign To</Label>
                     <Select value={assignedTo} onValueChange={setAssignedTo}>
-                      <SelectTrigger><SelectValue placeholder="Select employee" /></SelectTrigger>
-                      <SelectContent>
+                      <SelectTrigger className="bg-foreground/5 border-foreground/10 text-foreground h-12 rounded-xl"><SelectValue placeholder="Select employee" /></SelectTrigger>
+                      <SelectContent className="bg-background/95 border-foreground/10 text-foreground">
                         {employees?.map((e) => (
                           <SelectItem key={e.id} value={e.id}>{e.full_name || e.email}</SelectItem>
                         ))}
@@ -355,10 +358,10 @@ export default function TasksPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Workflow</Label>
+                    <Label className="text-xs font-black uppercase tracking-widest text-foreground/40">Workflow</Label>
                     <Select value={workflowId} onValueChange={setWorkflowId}>
-                      <SelectTrigger><SelectValue placeholder="Select workflow (optional)" /></SelectTrigger>
-                      <SelectContent>
+                      <SelectTrigger className="bg-foreground/5 border-foreground/10 text-foreground h-12 rounded-xl"><SelectValue placeholder="Select workflow (optional)" /></SelectTrigger>
+                      <SelectContent className="bg-background/95 border-foreground/10 text-foreground">
                         {workflows?.map((w) => (
                           <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>
                         ))}
@@ -366,12 +369,12 @@ export default function TasksPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Deadline</Label>
-                    <Input type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+                    <Label className="text-xs font-black uppercase tracking-widest text-foreground/40">Deadline</Label>
+                    <Input type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} className="bg-foreground/5 border-foreground/10 text-foreground h-12 rounded-xl [color-scheme:dark] dark:[color-scheme:dark]" />
                   </div>
-                  <Button onClick={() => createMutation.mutate()} disabled={createMutation.isPending || !title.trim()} className="w-full">
+                  <button onClick={() => createMutation.mutate()} disabled={createMutation.isPending || !title.trim()} className="w-full bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white py-4 rounded-xl text-sm font-black uppercase tracking-[0.2em] shadow-lg transition-all active:scale-95">
                     Create Task
-                  </Button>
+                  </button>
                 </div>
               </SheetContent>
             </Sheet>
@@ -380,22 +383,29 @@ export default function TasksPage() {
 
         {/* Task Detail Sheet */}
         <Sheet open={!!detailTask} onOpenChange={(o) => !o && setDetailTask(null)}>
-          <SheetContent className="overflow-y-auto sm:max-w-lg">
+          <SheetContent className="overflow-y-auto sm:max-w-xl bg-background/90 backdrop-blur-3xl border-l border-foreground/10 text-foreground">
             {detailTask && (
               <>
                 <SheetHeader>
-                  <SheetTitle>{detailTask.title}</SheetTitle>
-                </SheetHeader>
-                <div className="space-y-6 mt-4">
-                  <div>
-                    <p className="label-text mb-1">Status</p>
+                  <SheetTitle className="text-3xl font-black text-foreground uppercase tracking-tight leading-none mb-1">{detailTask.title}</SheetTitle>
+                  <div className="flex items-center gap-2 mt-2">
                     <StatusBadge status={detailTask.status} />
-                    <div className="flex gap-2 mt-2 flex-wrap">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-foreground/20">Task ID: {detailTask.id.slice(0, 8)}</span>
+                  </div>
+                </SheetHeader>
+                
+                <div className="space-y-8 mt-12 pb-20">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/30 mb-4">Actions</p>
+                    <div className="flex gap-3 mt-2 flex-wrap">
                       {getStatusActions(detailTask).map((action) => (
-                        <Button
+                        <button
                           key={action.status}
-                          size="sm"
-                          variant={action.status === "rejected" ? "destructive" : "default"}
+                          className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg ${
+                            action.status === "rejected" 
+                              ? "bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white" 
+                              : "bg-foreground text-background hover:bg-foreground/90"
+                          }`}
                           onClick={() =>
                             updateStatusMutation.mutate({
                               taskId: detailTask.id,
@@ -406,120 +416,122 @@ export default function TasksPage() {
                           }
                         >
                           {action.label}
-                        </Button>
+                        </button>
                       ))}
                     </div>
                   </div>
 
                   {detailTask.description && (
-                    <div>
-                      <p className="label-text mb-1">Description</p>
-                      <p className="text-sm">{detailTask.description}</p>
+                    <div className="glass-card-dark rounded-2xl p-6 border border-foreground/5">
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/30 mb-3">Description</p>
+                      <p className="text-sm leading-relaxed text-foreground/80">{detailTask.description}</p>
                     </div>
                   )}
 
-                  <div>
-                    <p className="label-text mb-1">Details</p>
-                    <div className="text-sm space-y-1">
-                      <p className="font-mono tabular-nums text-muted-foreground">
-                        Created: {new Date(detailTask.created_at).toLocaleString()}
-                      </p>
-                      {detailTask.deadline && (
-                        <p className="font-mono tabular-nums text-muted-foreground">
-                          Deadline: {new Date(detailTask.deadline).toLocaleString()}
-                        </p>
-                      )}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="glass-card-dark rounded-2xl p-4 border border-foreground/5">
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/30 mb-1">Created</p>
+                      <p className="text-sm font-bold text-foreground font-mono tabular-nums">{new Date(detailTask.created_at).toLocaleDateString()}</p>
                     </div>
+                    {detailTask.deadline && (
+                      <div className="glass-card-dark rounded-2xl p-4 border border-foreground/5">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/30 mb-1">Deadline</p>
+                        <p className="text-sm font-bold text-red-500 font-mono tabular-nums">{new Date(detailTask.deadline).toLocaleDateString()}</p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Documents */}
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="label-text">Documents</p>
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/30">Documents</p>
                       <div>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          multiple
-                          accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif"
-                          className="hidden"
-                          onChange={handleFileUpload}
-                        />
-                        <Button
-                          size="sm"
-                          variant="outline"
+                        <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileUpload} />
+                        <button
+                          className="bg-foreground/5 hover:bg-foreground/10 text-foreground px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-foreground/5 transition-all flex items-center gap-2"
                           onClick={() => fileInputRef.current?.click()}
                           disabled={uploading}
                         >
-                          <Upload className="h-3 w-3 mr-1" />
-                          {uploading ? "Uploading..." : "Upload"}
-                        </Button>
+                          <Upload className="h-3.5 w-3.5" />
+                          {uploading ? "Uploading..." : "Attach Files"}
+                        </button>
                       </div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-1 gap-2">
                       {taskDocuments?.map((doc) => (
                         <div
                           key={doc.id}
-                          className="flex items-center gap-2 p-2 rounded-md bg-accent/30 hover:bg-accent/50 transition-colors cursor-pointer"
+                          className="flex items-center gap-4 p-4 rounded-2xl bg-foreground/5 hover:bg-foreground/10 transition-all cursor-pointer border border-foreground/5 group"
                           onClick={() => handleDownload(doc)}
                         >
-                          <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <div className="h-10 w-10 rounded-xl bg-foreground/5 flex items-center justify-center shrink-0 border border-foreground/5 group-hover:border-foreground/20 transition-all">
+                            <FileText className="h-5 w-5 text-foreground/40" />
+                          </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{doc.file_name}</p>
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="text-sm font-bold text-foreground truncate">{doc.file_name}</p>
+                            <p className="text-[10px] text-foreground/30 font-black uppercase tracking-widest mt-0.5">
                               {formatFileSize(doc.file_size)} · {new Date(doc.created_at).toLocaleDateString()}
                             </p>
                           </div>
-                          <Download className="h-3 w-3 text-muted-foreground shrink-0" />
+                          <Download className="h-4 w-4 text-foreground/20 group-hover:text-foreground transition-colors shrink-0" />
                         </div>
                       ))}
                       {(!taskDocuments || taskDocuments.length === 0) && (
-                        <p className="text-xs text-muted-foreground">No documents attached</p>
+                        <p className="text-xs font-bold text-foreground/20 uppercase tracking-widest py-8 text-center border border-dashed border-foreground/10 rounded-2xl">No assets attached</p>
                       )}
                     </div>
                   </div>
 
                   {/* History */}
                   <div>
-                    <p className="label-text mb-2">History</p>
-                    <div className="space-y-2">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/30 mb-4">History Log</p>
+                    <div className="space-y-4">
                       {taskHistory?.map((h: any) => (
-                        <div key={h.id} className="text-xs border-l-2 border-primary pl-3 py-1">
-                          <p className="font-medium">{h.action}: {h.old_value} → {h.new_value}</p>
-                          <p className="text-muted-foreground font-mono tabular-nums">
-                            {h.profile?.full_name || "Unknown"} · {new Date(h.created_at).toLocaleString()}
+                        <div key={h.id} className="relative pl-6 before:absolute before:left-0 before:top-1.5 before:bottom-0 before:w-0.5 before:bg-foreground/10">
+                          <p className="text-xs font-bold text-foreground">{h.action}: <span className="text-red-500">{h.old_value}</span> → <span className="text-green-500">{h.new_value}</span></p>
+                          <p className="text-[10px] text-foreground/30 font-black uppercase tracking-widest mt-1">
+                            {h.profile?.full_name || "Unknown"} · {new Date(h.created_at).toLocaleDateString()}
                           </p>
                         </div>
                       ))}
-                      {(!taskHistory || taskHistory.length === 0) && (
-                        <p className="text-xs text-muted-foreground">No history yet</p>
-                      )}
                     </div>
                   </div>
 
                   {/* Comments */}
-                  <div>
-                    <p className="label-text mb-2">Comments</p>
-                    <div className="space-y-3 mb-3">
+                  <div className="pt-4 border-t border-foreground/5">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/30 mb-4">Collaborators</p>
+                    <div className="space-y-4 mb-6">
                       {taskComments?.map((c: any) => (
-                        <div key={c.id} className="bg-accent/50 rounded-md p-3">
-                          <p className="text-sm">{c.content}</p>
-                          <p className="text-[10px] text-muted-foreground mt-1 font-mono tabular-nums">
-                            {c.profile?.full_name || c.profile?.email || "Unknown"} · {new Date(c.created_at).toLocaleString()}
-                          </p>
+                        <div key={c.id} className="flex gap-4">
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-lg">
+                            {c.profile?.full_name?.[0]?.toUpperCase() || "?"}
+                          </div>
+                          <div className="flex-1">
+                            <div className="bg-foreground/5 border border-foreground/5 rounded-2xl p-4 shadow-sm">
+                              <p className="text-sm text-foreground/90 leading-relaxed">{c.content}</p>
+                            </div>
+                            <p className="text-[9px] text-foreground/20 font-black uppercase tracking-widest mt-2 px-1">
+                              {c.profile?.full_name || "Unknown"} · {new Date(c.created_at).toLocaleTimeString()}
+                            </p>
+                          </div>
                         </div>
                       ))}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-3 sticky bottom-4">
                       <Input
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
                         placeholder="Add a comment..."
+                        className="bg-foreground/5 border-foreground/10 text-foreground placeholder:text-foreground/20 h-12 rounded-2xl focus:ring-red-500 shadow-inner"
                         onKeyDown={(e) => e.key === "Enter" && addCommentMutation.mutate()}
                       />
-                      <Button size="sm" onClick={() => addCommentMutation.mutate()} disabled={!comment.trim()}>
-                        <MessageSquare className="h-4 w-4" />
-                      </Button>
+                      <button 
+                        onClick={() => addCommentMutation.mutate()} 
+                        disabled={!comment.trim()}
+                        className="bg-red-500 text-white px-5 rounded-2xl flex items-center justify-center hover:bg-red-600 transition-all shadow-lg active:scale-95 disabled:opacity-50"
+                      >
+                        <Send className="h-5 w-5" />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -529,48 +541,61 @@ export default function TasksPage() {
         </Sheet>
 
         {/* Task List */}
-        <Card className="card-shadow">
-          <CardContent className="p-0">
-            <table className="w-full">
+        <div className="glass-card-dark rounded-3xl border border-foreground/10 overflow-hidden shadow-2xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left p-3 label-text">Task</th>
-                  <th className="text-left p-3 label-text">Status</th>
-                  <th className="text-left p-3 label-text">Deadline</th>
-                  <th className="text-left p-3 label-text">Created</th>
+                <tr className="border-b border-foreground/5 bg-foreground/[0.02]">
+                  <th className="p-5 text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40">Task Record</th>
+                  <th className="p-5 text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40">Status</th>
+                  <th className="p-5 text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40 text-center">Deadline</th>
+                  <th className="p-5 text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40 text-right">Created</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-foreground/5">
                 {tasks?.map((task) => (
                   <tr
                     key={task.id}
-                    className="border-b border-border last:border-0 hover:bg-accent/30 transition-colors cursor-pointer"
+                    className="group hover:bg-white/[0.03] transition-all cursor-pointer"
                     onClick={() => setDetailTask(task)}
                   >
-                    <td className="p-3">
-                      <p className="text-sm font-medium">{task.title}</p>
+                    <td className="p-5">
+                      <p className="text-sm font-black text-foreground group-hover:text-red-500 transition-colors">{task.title}</p>
                       {task.description && (
-                        <p className="text-xs text-muted-foreground truncate max-w-xs">{task.description}</p>
+                        <p className="text-[10px] font-bold text-foreground/30 truncate max-sm mt-0.5 uppercase tracking-widest">{task.description}</p>
                       )}
                     </td>
-                    <td className="p-3"><StatusBadge status={task.status} /></td>
-                    <td className="p-3 text-sm text-muted-foreground font-mono tabular-nums">
-                      {task.deadline ? new Date(task.deadline).toLocaleDateString() : "—"}
+                    <td className="p-5">
+                      <div className="flex scale-90 origin-left">
+                        <StatusBadge status={task.status} />
+                      </div>
                     </td>
-                    <td className="p-3 text-sm text-muted-foreground font-mono tabular-nums">
-                      {new Date(task.created_at).toLocaleDateString()}
+                    <td className="p-5 text-center">
+                      <span className={`text-[11px] font-black font-mono tabular-nums uppercase ${task.deadline ? 'text-red-500' : 'text-foreground/20'}`}>
+                        {task.deadline ? new Date(task.deadline).toLocaleDateString() : "No Limit"}
+                      </span>
+                    </td>
+                    <td className="p-5 text-right">
+                      <span className="text-[11px] font-black text-foreground/30 font-mono tabular-nums uppercase">
+                        {new Date(task.created_at).toLocaleDateString()}
+                      </span>
                     </td>
                   </tr>
                 ))}
                 {(!tasks || tasks.length === 0) && (
                   <tr>
-                    <td colSpan={4} className="p-6 text-center text-sm text-muted-foreground">No tasks found</td>
+                    <td colSpan={4} className="p-20 text-center">
+                      <div className="h-16 w-16 rounded-full bg-foreground/5 flex items-center justify-center mx-auto mb-4 border border-foreground/5">
+                        <CheckSquare className="h-8 w-8 text-foreground/10" />
+                      </div>
+                      <p className="text-sm font-bold text-foreground/20 uppercase tracking-[0.3em]">No archive records found</p>
+                    </td>
                   </tr>
                 )}
               </tbody>
             </table>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </AppLayout>
   );

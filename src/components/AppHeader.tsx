@@ -42,29 +42,29 @@ export function AppHeader() {
   const currentRoute = routeNames[location.pathname] || "WorkSync";
 
   return (
-    <header className="h-14 flex items-center justify-between border-b border-border px-4 bg-background/80 backdrop-blur-sm">
-      <div className="flex items-center gap-3">
-        <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
-        <nav className="flex items-center gap-1.5 text-sm">
-          <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
+    <header className="h-16 flex items-center justify-between border-b border-foreground/10 px-4 sm:px-6 backdrop-blur-xl bg-glass shadow-sm">
+      <div className="flex items-center gap-4">
+        <SidebarTrigger className="text-foreground/50 hover:text-foreground transition-colors" />
+        <nav className="flex items-center gap-2 text-sm">
+          <Link to="/dashboard" className="text-foreground/60 hover:text-foreground transition-colors font-bold uppercase tracking-wider">
             Home
           </Link>
-          <span className="text-muted-foreground/50">/</span>
-          <span className="font-semibold text-foreground">{currentRoute}</span>
+          <span className="text-foreground/30 font-bold">/</span>
+          <span className="font-black text-foreground uppercase tracking-tight truncate max-w-[100px] sm:max-w-none">{currentRoute}</span>
         </nav>
       </div>
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-3">
         <Link
           to="/notifications"
-          className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
+          className="relative p-2 rounded-xl text-foreground/50 hover:text-foreground hover:bg-foreground/5 transition-all"
         >
-          <Bell className="h-4 w-4" />
+          <Bell className="h-5 w-5" />
           {unreadCount && unreadCount > 0 ? (
             <motion.span
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="absolute -top-0.5 -right-0.5 h-4.5 w-4.5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center min-w-[18px] h-[18px]"
+              className="absolute top-1.5 right-1.5 h-4 w-4 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center shadow-[0_0_10px_rgba(239,68,68,0.5)]"
             >
               {unreadCount > 9 ? "9+" : unreadCount}
             </motion.span>
@@ -72,14 +72,15 @@ export function AppHeader() {
         </Link>
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
+          className="p-2 rounded-xl text-foreground/50 hover:text-foreground hover:bg-foreground/5 transition-all"
         >
-          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </button>
-        <div className="ml-2 h-8 w-8 rounded-full gradient-bg flex items-center justify-center text-primary-foreground text-xs font-bold">
+        <div className="ml-3 h-9 w-9 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white text-xs font-black shadow-[0_0_15px_rgba(239,68,68,0.3)]">
           {profile?.full_name?.[0]?.toUpperCase() || profile?.email?.[0]?.toUpperCase() || "U"}
         </div>
       </div>
     </header>
   );
 }
+

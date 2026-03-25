@@ -81,131 +81,128 @@ export default function ReportsPage() {
     { label: "Completion Rate", value: `${summaryStats?.rate || 0}%`, icon: TrendingUp, accent: "text-success" },
     { label: "Active Now", value: summaryStats?.active || 0, icon: Clock, accent: "text-warning" },
     { label: "Rejected", value: summaryStats?.overdue || 0, icon: AlertTriangle, accent: "text-destructive" },
-  ];
-
-  return (
+  ];  return (
     <AppLayout>
-      <div className="space-y-6 animate-fade-in">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Reports & Analytics</h1>
-          <p className="text-sm text-muted-foreground mt-1">System performance overview</p>
+      <div className="space-y-8 animate-fade-in relative z-10 p-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 sm:gap-4 bg-glass p-6 sm:p-8 rounded-3xl border border-foreground/5 backdrop-blur-3xl shadow-2xl relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+            <h1 className="text-4xl font-black tracking-tight text-foreground drop-shadow-md">Analytics & Intelligence</h1>
+            <p className="text-sm font-bold text-foreground/40 mt-1 uppercase tracking-[0.2em]">Operational performance metrics</p>
+          </motion.div>
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {summaryCards.map((card, i) => (
             <motion.div
               key={card.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08, duration: 0.4 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: i * 0.05 }}
             >
-              <Card className="card-shadow card-3d">
-                <CardContent className="p-5">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="label-text">{card.label}</p>
-                      <p className="text-2xl font-bold tabular-nums mt-1">{card.value}</p>
-                    </div>
-                    <card.icon className={`h-5 w-5 ${card.accent}`} />
+              <div className="glass-card card-3d p-6 rounded-3xl border border-foreground/5 relative overflow-hidden group">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/30 truncate">{card.label}</p>
+                    <p className="text-3xl font-black text-foreground mt-1 tabular-nums group-hover:text-red-500 transition-colors">{card.value}</p>
                   </div>
-                </CardContent>
-              </Card>
+                  <div className={`h-12 w-12 rounded-2xl bg-foreground/5 flex items-center justify-center border border-foreground/5 transition-all group-hover:scale-110 group-hover:border-red-500/20 shadow-lg`}>
+                    <card.icon className={`h-6 w-6 ${card.accent === 'text-primary' ? 'text-red-500' : card.accent === 'text-success' ? 'text-green-500' : card.accent === 'text-warning' ? 'text-orange-500' : 'text-red-600'}`} />
+                  </div>
+                </div>
+                <div className="absolute -right-4 -bottom-4 h-24 w-24 bg-red-500/5 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
             </motion.div>
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-10">
           {/* Pie Chart */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
           >
-            <Card className="card-shadow">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold">Task Status Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {taskStats && taskStats.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={taskStats}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={3}
-                        dataKey="value"
-                        label={({ name, value }) => `${name}: ${value}`}
-                        labelLine={{ strokeWidth: 1 }}
-                      >
-                        {taskStats.map((entry: any, i: number) => (
-                          <Cell key={i} fill={entry.color} stroke="none" />
-                        ))}
-                      </Pie>
-                      <Legend
-                        verticalAlign="bottom"
-                        iconType="circle"
-                        iconSize={8}
-                        wrapperStyle={{ fontSize: "11px" }}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          borderRadius: "8px",
-                          border: "1px solid hsl(var(--border))",
-                          background: "hsl(var(--card))",
-                          color: "hsl(var(--foreground))",
-                          fontSize: "12px",
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-[300px] flex items-center justify-center text-sm text-muted-foreground">No task data available</div>
-                )}
-              </CardContent>
-            </Card>
+            <div className="glass-card-dark rounded-3xl border border-foreground/10 p-8 shadow-2xl">
+              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-foreground/40 mb-8">Task Allocation status</h3>
+              {taskStats && taskStats.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={taskStats}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={70}
+                      outerRadius={105}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {taskStats.map((entry: any, i: number) => (
+                        <Cell key={i} fill={entry.color} stroke="none" />
+                      ))}
+                    </Pie>
+                    <Legend
+                      verticalAlign="bottom"
+                      iconType="circle"
+                      iconSize={8}
+                      wrapperStyle={{ fontSize: "10px", fontWeight: "900", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em" }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: "16px",
+                        border: "1px solid var(--border)",
+                        background: "var(--background)",
+                        backdropFilter: "blur(20px)",
+                        color: "var(--foreground)",
+                        fontSize: "12px",
+                        fontWeight: "900"
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-foreground/10">No operational data</div>
+              )}
+            </div>
           </motion.div>
 
           {/* Bar Chart */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
           >
-            <Card className="card-shadow">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold">Workflow Performance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {workflowStats && workflowStats.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={workflowStats} barGap={4}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                      <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                      <Tooltip
-                        contentStyle={{
-                          borderRadius: "8px",
-                          border: "1px solid hsl(var(--border))",
-                          background: "hsl(var(--card))",
-                          color: "hsl(var(--foreground))",
-                          fontSize: "12px",
-                        }}
-                      />
-                      <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "11px" }} />
-                      <Bar dataKey="total" fill="#3b82f6" radius={[6, 6, 0, 0]} name="Total" />
-                      <Bar dataKey="completed" fill="#22c55e" radius={[6, 6, 0, 0]} name="Completed" />
-                      <Bar dataKey="pending" fill="#f59e0b" radius={[6, 6, 0, 0]} name="Active" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-[300px] flex items-center justify-center text-sm text-muted-foreground">No workflow data available</div>
-                )}
-              </CardContent>
-            </Card>
+            <div className="glass-card-dark rounded-3xl border border-foreground/10 p-8 shadow-2xl">
+              <h3 className="text-xs font-black uppercase tracking-[0.3em] text-foreground/40 mb-8">System Output Efficiency</h3>
+              {workflowStats && workflowStats.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={workflowStats} barGap={4}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--foreground-muted)" vertical={false} opacity={0.1} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: "#94a3b8", fontWeight: "900" }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: "#94a3b8", fontWeight: "900" }} />
+                    <Tooltip
+                      cursor={{ fill: 'var(--foreground-muted)', opacity: 0.05 }}
+                      contentStyle={{
+                        borderRadius: "16px",
+                        border: "1px solid var(--border)",
+                        background: "var(--background)",
+                        backdropFilter: "blur(20px)",
+                        color: "var(--foreground)",
+                        fontSize: "12px",
+                        fontWeight: "900"
+                      }}
+                    />
+                    <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "10px", fontWeight: "900", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em" }} />
+                    <Bar dataKey="total" fill="#64748b" radius={[4, 4, 0, 0]} name="Volume" />
+                    <Bar dataKey="completed" fill="#ef4444" radius={[4, 4, 0, 0]} name="Done" />
+                    <Bar dataKey="pending" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Active" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-foreground/10">No execution data</div>
+              )}
+            </div>
           </motion.div>
         </div>
       </div>

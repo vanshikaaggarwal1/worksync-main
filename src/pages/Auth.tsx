@@ -7,8 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2, ArrowRight, ArrowLeft, Mail, KeyRound, User, Sparkles, CheckCircle } from "lucide-react";
-import { useTheme } from "@/contexts/ThemeContext";
-import { Moon, Sun } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 type AuthView = "login" | "signup" | "forgot";
@@ -21,7 +19,6 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,18 +57,24 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
-      {/* Animated background */}
-      <div className="absolute inset-0 pointer-events-none">
+    <div 
+      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-cover bg-center bg-no-repeat bg-[#0a0a0a]"
+      style={{ backgroundImage: "url('/background.jpeg')" }}
+    >
+      {/* Dark overlay for contrast */}
+      <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+
+      {/* Decorative gradient meshes */}
+      <div className="absolute inset-0 pointer-events-none opacity-40 mix-blend-screen">
         <motion.div
-          animate={{ x: [0, 30, 0], y: [0, -20, 0], scale: [1, 1.1, 1] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-32 -right-32 w-[400px] h-[400px] rounded-full bg-primary/8 blur-[120px]"
+          animate={{ x: [0, 40, 0], y: [0, -30, 0], scale: [1, 1.1, 1] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/4 -right-1/4 w-[800px] h-[800px] rounded-full bg-white/20 blur-[140px]"
         />
         <motion.div
-          animate={{ x: [0, -20, 0], y: [0, 30, 0], scale: [1, 1.15, 1] }}
-          transition={{ duration: 13, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -bottom-32 -left-32 w-[300px] h-[300px] rounded-full bg-primary/6 blur-[100px]"
+          animate={{ x: [0, -40, 0], y: [0, 50, 0], scale: [1, 1.2, 1] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-1/4 -left-1/4 w-[600px] h-[600px] rounded-full bg-white/10 blur-[120px]"
         />
       </div>
 
@@ -79,46 +82,17 @@ export default function Auth() {
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         onClick={() => navigate("/")}
-        className="fixed top-4 left-4 p-2.5 rounded-xl bg-secondary/80 backdrop-blur-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-all z-10 flex items-center gap-1.5 text-sm font-medium"
+        className="fixed top-6 left-6 p-2 rounded-xl backdrop-blur-md bg-black/20 border border-white/10 text-white/80 hover:text-white hover:bg-black/40 transition-all z-20 flex items-center gap-1.5 text-sm font-medium shadow-2xl"
       >
         <ArrowLeft className="h-4 w-4" /> Back
       </motion.button>
 
-      <motion.button
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        onClick={toggleTheme}
-        className="fixed top-4 right-4 p-2.5 rounded-xl bg-secondary/80 backdrop-blur-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-all z-10"
-      >
-        {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-      </motion.button>
-
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-[420px] relative z-10"
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-[420px] relative z-20"
       >
-        {/* Logo & Header */}
-        <div className="text-center mb-8">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 200 }}
-            className="inline-flex items-center gap-2.5 mb-3"
-          >
-            <div className="h-10 w-10 rounded-xl gradient-bg flex items-center justify-center shadow-lg">
-              <span className="text-primary-foreground font-bold text-base">W</span>
-            </div>
-            <span className="text-2xl font-bold tracking-tight text-foreground">WorkSync</span>
-          </motion.div>
-          <p className="text-sm text-muted-foreground mt-1">
-            {view === "login" && "Welcome back — sign in to continue"}
-            {view === "signup" && "Create your account to get started"}
-            {view === "forgot" && "We'll send you a reset link"}
-          </p>
-        </div>
-
         <AnimatePresence mode="wait">
           <motion.div
             key={view}
@@ -127,26 +101,55 @@ export default function Auth() {
             exit={{ opacity: 0, x: view === "forgot" ? -20 : 0, y: view === "forgot" ? 0 : -10 }}
             transition={{ duration: 0.3 }}
           >
-            <Card className="card-shadow-md border glass-card">
+            <Card className="border border-white/20 shadow-2xl relative overflow-hidden border-t-white/40"
+              style={{
+                background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%)",
+                backdropFilter: "blur(24px)",
+                boxShadow: "0 20px 80px -10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 0 20px rgba(255,255,255,0.05)"
+              }}
+            >
               {view !== "forgot" && (
-                <CardHeader className="pb-4 pt-5 px-5">
-                  <div className="flex gap-1 p-1 bg-secondary/80 rounded-xl">
+                <CardHeader className="pb-4 pt-6 px-6">
+                  {/* Logo block */}
+                  <div className="text-center mb-6">
+                    <div className="inline-flex items-center gap-2 mb-2 text-white">
+                      <div className="h-8 w-8 rounded-lg flex items-center justify-center shadow-lg"
+                        style={{
+                          background: "linear-gradient(135deg, #ef4444, #dc2626)",
+                          boxShadow: "0 4px 14px rgba(239,68,68,0.4)"
+                        }}
+                      >
+                        <span className="font-bold text-sm">W</span>
+                      </div>
+                      <span className="text-xl font-bold tracking-tight">WorkSync</span>
+                    </div>
+                    <p className="text-sm text-white/70 font-medium">
+                      {view === "login" ? "Welcome back — sign in" : "Create your account to get started"}
+                    </p>
+                  </div>
+
+                  {/* Tabs toggle */}
+                  <div className="flex p-1 rounded-xl"
+                    style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  >
                     <button
+                      type="button"
                       onClick={() => setView("login")}
-                      className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-300 ${
+                      className={`flex-1 py-1.5 text-sm font-semibold rounded-lg transition-all duration-300 ${
                         view === "login"
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted-foreground hover:text-foreground"
+                          ? "bg-white text-black shadow-lg"
+                          : "text-white/60 hover:text-white"
                       }`}
                     >
                       Sign In
                     </button>
                     <button
+                      type="button"
                       onClick={() => setView("signup")}
-                      className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-300 ${
+                      className={`flex-1 py-1.5 text-sm font-semibold rounded-lg transition-all duration-300 ${
                         view === "signup"
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted-foreground hover:text-foreground"
+                          ? "bg-white text-black shadow-lg"
+                          : "text-white/60 hover:text-white"
                       }`}
                     >
                       Sign Up
@@ -155,44 +158,44 @@ export default function Auth() {
                 </CardHeader>
               )}
 
-              <CardContent className={view === "forgot" ? "p-6" : "px-5 pb-5"}>
+              <CardContent className={view === "forgot" ? "p-8" : "px-6 pb-8"}>
                 {view === "forgot" && resetSent ? (
                   <motion.div
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     className="text-center py-6"
                   >
-                    <div className="h-16 w-16 rounded-2xl bg-success/10 flex items-center justify-center mx-auto mb-4">
-                      <CheckCircle className="h-8 w-8 text-success" />
+                    <div className="h-16 w-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-5 backdrop-blur-sm">
+                      <CheckCircle className="h-8 w-8 text-[#22c55e]" />
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">Check Your Email</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      We sent a password reset link to <span className="font-medium text-foreground">{email}</span>
+                    <h3 className="text-xl font-semibold mb-2 text-white">Check Your Email</h3>
+                    <p className="text-sm text-white/70 mb-6">
+                      We sent a password reset link to <br/><span className="font-semibold text-white">{email}</span>
                     </p>
                     <Button
                       variant="outline"
-                      size="sm"
+                      className="w-full h-11 bg-foreground/5 border-foreground/20 text-foreground hover:bg-foreground/10 backdrop-blur-sm"
                       onClick={() => { setView("login"); setResetSent(false); }}
                     >
-                      <ArrowLeft className="h-3.5 w-3.5 mr-1.5" /> Back to Sign In
+                      <ArrowLeft className="h-4 w-4 mr-2" /> Back to Sign In
                     </Button>
                   </motion.div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-4">
                     {view === "forgot" && (
-                      <div className="text-center mb-2">
-                        <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                          <Mail className="h-7 w-7 text-primary" />
+                      <div className="text-center mb-6">
+                        <div className="h-14 w-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-4 backdrop-blur-sm shadow-xl">
+                          <Mail className="h-6 w-6 text-white" />
                         </div>
-                        <h3 className="text-lg font-semibold">Forgot Password?</h3>
-                        <p className="text-xs text-muted-foreground mt-1">Enter your email and we'll send a reset link</p>
+                        <h3 className="text-xl font-bold text-white mb-2">Forgot Password?</h3>
+                        <p className="text-sm text-white/70">Enter your email and we'll send a reset link</p>
                       </div>
                     )}
 
                     {view === "signup" && (
-                      <div className="space-y-2">
-                        <Label htmlFor="fullName" className="text-sm font-medium flex items-center gap-1.5">
-                          <User className="h-3.5 w-3.5 text-muted-foreground" /> Full Name
+                      <div className="space-y-1.5">
+                        <Label htmlFor="fullName" className="text-xs font-semibold text-white flex items-center gap-1.5 px-0.5">
+                          <User className="h-3.5 w-3.5 text-white/60" /> Full Name
                         </Label>
                         <Input
                           id="fullName"
@@ -201,30 +204,30 @@ export default function Auth() {
                           onChange={(e) => setFullName(e.target.value)}
                           placeholder="Enter your name"
                           required
-                          className="h-11"
+                          className="h-11 bg-transparent border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30"
                         />
                       </div>
                     )}
 
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-sm font-medium flex items-center gap-1.5">
-                        <Mail className="h-3.5 w-3.5 text-muted-foreground" /> Email
+                    <div className="space-y-1.5">
+                      <Label htmlFor="email" className="text-xs font-semibold text-white flex items-center gap-1.5 px-0.5">
+                        <Mail className="h-3.5 w-3.5 text-white/60" /> Email
                       </Label>
                       <Input
                         id="email"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="you@example.com"
+                        placeholder="gazlwahab58@gmail.com"
                         required
-                        className="h-11"
+                        className="h-11 bg-transparent border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30"
                       />
                     </div>
 
                     {view !== "forgot" && (
-                      <div className="space-y-2">
-                        <Label htmlFor="password" className="text-sm font-medium flex items-center gap-1.5">
-                          <KeyRound className="h-3.5 w-3.5 text-muted-foreground" /> Password
+                      <div className="space-y-1.5">
+                        <Label htmlFor="password" className="text-xs font-semibold text-white flex items-center gap-1.5 px-0.5">
+                          <KeyRound className="h-3.5 w-3.5 text-white/60" /> Password
                         </Label>
                         <Input
                           id="password"
@@ -234,48 +237,54 @@ export default function Auth() {
                           placeholder="••••••••"
                           required
                           minLength={6}
-                          className="h-11"
+                          className="h-11 bg-transparent border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30"
                         />
                       </div>
                     )}
 
                     {view === "login" && (
-                      <div className="flex justify-end">
+                      <div className="flex justify-end pt-1">
                         <button
                           type="button"
                           onClick={() => setView("forgot")}
-                          className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                          className="text-xs font-semibold text-white/80 hover:text-white transition-colors"
                         >
                           Forgot password?
                         </button>
                       </div>
                     )}
 
-                    <Button
-                      type="submit"
-                      className="w-full h-11 gradient-bg border-0 text-primary-foreground font-semibold hover:opacity-90 transition-all"
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          {view === "login" && "Sign In"}
-                          {view === "signup" && "Create Account"}
-                          {view === "forgot" && "Send Reset Link"}
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </>
-                      )}
-                    </Button>
+                    <div className="pt-2">
+                      <Button
+                        type="submit"
+                        className="w-full h-11 text-white font-bold tracking-wide shadow-lg border-none"
+                        style={{
+                          background: "linear-gradient(135deg, #ef4444, #dc2626)",
+                          boxShadow: "0 8px 30px rgba(239,68,68,0.4)"
+                        }}
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            {view === "login" && "Sign In"}
+                            {view === "signup" && "Create Account"}
+                            {view === "forgot" && "Send Reset Link"}
+                            <ArrowRight className="h-4 w-4 ml-1.5" />
+                          </>
+                        )}
+                      </Button>
+                    </div>
 
                     {view === "forgot" && (
-                      <div className="text-center">
+                      <div className="text-center pt-2">
                         <button
                           type="button"
                           onClick={() => setView("login")}
-                          className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
+                          className="text-sm font-semibold text-white/80 hover:text-white transition-colors inline-flex items-center gap-1.5"
                         >
-                          <ArrowLeft className="h-3 w-3" /> Back to Sign In
+                          <ArrowLeft className="h-4 w-4" /> Back to Sign In
                         </button>
                       </div>
                     )}
@@ -289,10 +298,10 @@ export default function Auth() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="text-center mt-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground"
+          transition={{ delay: 0.6 }}
+          className="text-center mt-8 flex items-center justify-center gap-2 text-xs font-medium text-white/60"
         >
-          <Sparkles className="h-3 w-3" />
+          <Sparkles className="h-3.5 w-3.5" />
           Sequential workflow management for teams
         </motion.div>
       </motion.div>

@@ -15,8 +15,15 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center relative bg-[#050505]">
+        <div 
+          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40"
+          style={{ backgroundImage: "url('/background.jpeg')" }}
+        />
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          <div className="h-12 w-12 border-4 border-white/10 border-t-red-500 rounded-full animate-spin shadow-[0_0_15px_rgba(239,68,68,0.3)]" />
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Securing Session...</p>
+        </div>
       </div>
     );
   }
