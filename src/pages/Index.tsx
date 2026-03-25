@@ -339,7 +339,7 @@ export default function Index() {
                         <div className="text-3xl lg:text-5xl font-black" style={{ color: stat.color, textShadow: `0 0 20px ${stat.color}40` }}>
                           {stat.value}
                         </div>
-                        <div className="text-xs md:text-sm font-bold text-white/60 mt-1 uppercase tracking-wide">{stat.label}</div>
+                        <div className="text-xs md:text-sm font-bold text-white/80 mt-1 uppercase tracking-wide">{stat.label}</div>
                       </motion.div>
                     ))}
                   </div>
@@ -366,7 +366,7 @@ export default function Index() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-sm md:text-base font-bold text-white truncate">{step.name}</div>
-                          <div className="text-xs font-medium text-foreground/50">{step.user} · {step.status}</div>
+                          <div className="text-xs font-medium text-white/70">{step.user} · {step.status}</div>
                           {step.pct > 0 && (
                             <div className="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden">
                               <motion.div initial={{ width: 0 }} whileInView={{ width: `${step.pct}%` }} viewport={{ once: true }} transition={{ duration: 1.5, delay: 0.5 }}
@@ -466,7 +466,9 @@ export default function Index() {
                 { step: "03", title: "Review & Complete", desc: "Tasks flow through approval steps. Admins get full visibility. Nothing slips.", icon: CheckSquare },
               ].map((item, i) => (
                 <motion.div key={item.step} variants={fadeUp} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} className="relative text-center">
-                  <div className="rounded-3xl border border-foreground/10 p-10 bg-white/[0.03] backdrop-blur-xl shadow-2xl relative z-10">
+                  <div className="rounded-3xl border border-foreground/10 p-10 bg-white/[0.08] backdrop-blur-xl shadow-2xl relative z-10"
+                    style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1)" }}
+                  >
                     <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-[0_10px_30px_rgba(239,68,68,0.4)]"
                       style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)" }}
                     >
@@ -474,7 +476,7 @@ export default function Index() {
                     </div>
                     <div className="text-6xl font-black mb-4 text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">{item.step}</div>
                     <h3 className="text-xl font-bold text-white mb-4">{item.title}</h3>
-                    <p className="text-sm font-medium text-foreground/50 leading-relaxed">{item.desc}</p>
+                    <p className="text-sm font-medium text-white/70 leading-relaxed">{item.desc}</p>
                   </div>
                   {i < 2 && <ChevronRight className="hidden md:block absolute -right-6 top-[40%] h-12 w-12 z-20 text-red-500/50" />}
                 </motion.div>
